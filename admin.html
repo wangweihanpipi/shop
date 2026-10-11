@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 - 智云优选</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="admin-head">
+  <div class="logo">☁️ 智云优选 · 管理后台</div>
+  <a href="index.html">退出登录 →</a>
+</div>
+
+<div class="container">
+
+  <div class="panel">
+    <h3>➕ 添加新商品</h3>
+    <div class="form-row">
+      <input id="pName" placeholder="商品名称，如：无人机">
+      <input id="pEmoji" placeholder="图标 emoji，如：🚁">
+      <input id="pDesc" placeholder="商品简介">
+      <input id="pPrice" type="number" placeholder="价格（元）">
+      <button class="btn" onclick="addProduct()">添加</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📦 商品列表</h3>
+    <table>
+      <thead><tr><th>ID</th><th>商品</th><th>简介</th><th>价格</th><th>操作</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+if(sessionStorage.getItem("zy_admin") !== "1"){
+  alert("请先登录！"); location.href = "login.html";
+}
+const EMOJIS = ["🎧","⌚","🔊","⌨️","📷","💡","🌬️","🪥","🚁","🎮","📱","💻"];
+
+function getProducts(){
+  const d = localStorage.getItem("zy_products");
+  return d ? JSON.parse(d) : [
+    {id:1,name:"无线降噪耳机",emoji:"🎧",desc:"AI 通话降噪，续航 40 小时",price:399},
+    {id:2,name:"智能手表",emoji:"⌚",desc:"心率血氧监测，50 米防水",price:899},
+    {id:3,name:"便携蓝牙音箱",emoji:"🔊",desc:"360° 环绕音效，IPX7 防水",price:199},
+    {id:4,name:"机械键盘",emoji:"⌨️",desc:"热插拔轴体，RGB 灯效",price:349},
+    {id:5,name:"4K 运动相机",emoji:"📷",desc:"防抖拍摄，支持水下 10 米",price:1299},
+    {id:6,name:"智能台灯",emoji:"💡",desc:"AI 感光调节，护眼无频闪",price:159},
+    {id:7,name:"空气净化器",emoji:"🌬️",desc:"除甲醛除菌，APP 远程控制",price:799},
+    {id:8,name:"电动牙刷",emoji:"🪥",desc:"声波震动，压力感应护龈",price:219},
+  ];
+}
+function save(list){ localStorage.setItem("zy_products", JSON.stringify(list)); }
+
+function render(){
+  const list = getProducts();
+  document.getElementById("tbody").innerHTML = list.map(p => `
+    <tr>
+      <td>${p.id}</td>
+      <td>${p.emoji} ${p.name}</td>
+      <td>${p.desc}</td>
+      <td>¥${p.price}</td>
+      <td><button class="btn red" onclick="del(${p.id})">删除</button></td>
+    </tr>`).join("") || `<tr><td colspan="5" class="empty">暂无商品</td></tr>`;
+}
+
+function addProduct(){
+  const name = document.getElementById("pName").value.trim();
+  let emoji = document.getElementById("pEmoji").value.trim();
+  const desc = document.getElementById("pDesc").value.trim();
+  const price = parseFloat(document.getElementById("pPrice").value);
+  if(!name || !desc || !price){ alert("请填写完整的商品信息！"); return; }
+  if(!emoji) emoji = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+  const list = getProducts();
+  list.push({id: Date.now(), name, emoji, desc, price});
+  save(list); render();
+  ["pName","pEmoji","pDesc","pPrice"].forEach(id => document.getElementById(id).value = "");
+  alert("添加成功！回到首页即可看到新商品。");
+}
+
+function del(id){
+  if(!confirm("确定删除该商品？")) return;
+  save(getProducts().filter(p => p.id !== id));
+  render();
+}
+render();
+</script>
+</body>
+</html>

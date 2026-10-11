@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智云优选 - AI电商在线销售系统</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="navbar">
+  <div class="logo">☁️ 智云优选</div>
+  <div class="search">
+    <input id="kw" placeholder="搜索商品，如：耳机">
+    <button onclick="render()">搜索</button>
+  </div>
+  <div class="nav-link">
+    <a href="index.html">首页</a>
+    <a href="login.html">管理员登录</a>
+  </div>
+</div>
+
+<div class="banner">
+  <h1>智能云 AI 电商在线销售系统</h1>
+  <p>AI 推荐 · 品质保障 · 极速发货</p>
+</div>
+
+<div class="container">
+  <h2 class="section-title">热门商品</h2>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="cart-bar" onclick="showCart()">🛒 购物车 <span id="cartCount">0</span> 件</div>
+
+<div class="footer">© 2026 智云优选 · 期中作业演示站点</div>
+
+<script>
+const DEFAULT_PRODUCTS = [
+  {id: 1, name: "无线降噪耳机", emoji: "🎧", desc: "AI 通话降噪，续航 40 小时", price: 399},
+  {id: 2, name: "智能手表", emoji: "⌚", desc: "心率血氧监测，50 米防水", price: 899},
+  {id: 3, name: "便携蓝牙音箱", emoji: "🔊", desc: "360° 环绕音效，IPX7 防水", price: 199},
+  {id: 4, name: "机械键盘", emoji: "⌨️", desc: "热插拔轴体，RGB 灯效", price: 349},
+  {id: 5, name: "4K 运动相机", emoji: "📷", desc: "防抖拍摄，支持水下 10 米", price: 1299},
+  {id: 6, name: "智能台灯", emoji: "💡", desc: "AI 感光调节，护眼无频闪", price: 159},
+  {id: 7, name: "空气净化器", emoji: "🌬️", desc: "除甲醛除菌，APP 远程控制", price: 799},
+  {id: 8, name: "电动牙刷", emoji: "🪥", desc: "声波震动，压力感应护龈", price: 219},
+];
+
+function getProducts(){
+  const d = localStorage.getItem("zy_products");
+  return d ? JSON.parse(d) : DEFAULT_PRODUCTS.slice();
+}
+function getCart(){ return JSON.parse(localStorage.getItem("zy_cart") || "[]"); }
+
+function render(){
+  const kw = (document.getElementById("kw").value || "").trim();
+  const list = getProducts().filter(p => !kw || p.name.includes(kw) || p.desc.includes(kw));
+  const grid = document.getElementById("grid");
+  grid.innerHTML = list.length ? list.map(p => `
+    <div class="card">
+      <div class="img">${p.emoji}</div>
+      <div class="info">
+        <div class="name">${p.name}</div>
+        <div class="desc">${p.desc}</div>
+        <div class="row">
+          <span class="price">¥${p.price}</span>
+          <button class="btn" onclick="addCart(${p.id})">加入购物车</button>
+        </div>
+      </div>
+    </div>`).join("") : `<div class="empty">没有找到相关商品</div>`;
+  document.getElementById("cartCount").textContent = getCart().length;
+}
+
+function addCart(id){
+  const cart = getCart();
+  cart.push(id);
+  localStorage.setItem("zy_cart", JSON.stringify(cart));
+  render();
+  alert("已加入购物车！");
+}
+
+function showCart(){
+  const cart = getCart();
+  const products = getProducts();
+  if(!cart.length){ alert("购物车还是空的，快去挑选商品吧！"); return; }
+  const detail = cart.map(id => { const p = products.find(x => x.id === id); return p ? p.name + " ¥" + p.price : ""; }).filter(Boolean);
+  const total = cart.reduce((s, id) => { const p = products.find(x => x.id === id); return s + (p ? p.price : 0); }, 0);
+  if(confirm("购物车商品：\n" + detail.join("\n") + "\n\n合计：¥" + total + "\n\n点击“确定”模拟结算（清空购物车）")){
+    localStorage.setItem("zy_cart", "[]");
+    render();
+    alert("下单成功！这是演示站点，不会产生真实交易。");
+  }
+}
+render();
+</script>
+</body>
+</html>
